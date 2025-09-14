@@ -1,0 +1,38 @@
+# .github/workflows/ci.yml
+
+name: 編碼僕人 CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    name: 建置與測試
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: 檢出程式碼
+        uses: actions/checkout@v4
+
+      - name: 設置 Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 安裝 Python 依賴
+        run: pip install -r requirements.txt
+
+      - name: 執行程式碼風格檢查
+        run: flake8 .
+
+      - name: 執行單元測試與生成覆蓋率報告
+        run: pytest --cov=src.oaa --cov-report=xml
+
+      - name: 建置 Docker 映像
+        run: docker build . --file Dockerfile --tag coding-butler-backend:latest
